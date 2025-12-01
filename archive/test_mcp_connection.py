@@ -25,6 +25,8 @@ async def test_mcp_connection():
     print("📡 Attempting to connect to: https://flights.fctolabs.com/mcp")
     print("   Using: npx mcp-remote\n")
 
+    flight_tools = None
+
     try:
         # Create MCP toolset
         print("⏳ Creating MCP toolset...")
@@ -92,12 +94,25 @@ async def test_mcp_connection():
         return False
 
     finally:
-        # Clean up the connection
-        try:
-            await flight_tools.close()
-            print("🔌 Connection closed gracefully\n")
-        except:
-            pass
+        # Clean up the connection if it was initialized
+        if flight_tools is not None:
+            try:
+                print("🔌 Shutting down connection...")
+                # Give pending operations a moment to complete
+                await asyncio.sleep(0.1)
+                await flight_tools.close()
+                print("✅ Connection closed gracefully\n")
+            except asyncio.CancelledError:
+                # Handle cancellation gracefully
+                print("⚠️  Connection cleanup cancelled\n")
+            except Exception as cleanup_error:
+                # Only show cleanup errors if they're not abort-related
+                error_msg = str(cleanup_error)
+                if 'abort' not in error_msg.lower():
+                    print(f"⚠️  Error during cleanup: {cleanup_error}\n")
+                else:
+                    # AbortError is expected during shutdown, ignore it
+                    print("✅ Connection terminated\n")
 
 
 async def quick_health_check():
