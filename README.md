@@ -2,6 +2,10 @@
 
 Small two-step workflow: Gemini interprets a natural-language request into flight params, then calls the LangGraph `search_flights` tool (Amadeus) to fetch real options.
 
+The Amadeus tooling comes from `langgraph_travel_agent` (pulled from https://github.com/fw2274/flight_agent and vendored under `langgraph_travel_agent/backend`). We wrap its `agent_graph.py` primitives so Google ADK can call them directly:
+- `agent_graph_module.search_flights` → exposed to ADK via the async `search_flights` wrapper in `flight_search.py` / `flight_search_dual.py`
+- `agent_graph_module.amadeus` client → validated on startup to ensure credentials are present
+
 ## Quick start
 - Prereqs: Python 3.10+, virtualenv, Amadeus credentials, Google API key.
 - Setup:
@@ -26,7 +30,7 @@ Small two-step workflow: Gemini interprets a natural-language request into fligh
 
 ## Files you’ll care about
 - `flight_search.py` — main entry; wires Gemini to the LangGraph tool.
-- `langgraph_travel_agent/backend/agent_graph.py` — houses the `search_flights` LangChain tool and Amadeus plumbing.
+- `langgraph_travel_agent/backend/agent_graph.py` — houses the `search_flights` LangChain tool and Amadeus plumbing (sourced from https://github.com/fw2274/flight_agent).
 - `flight_search_dual.py` — optional interpreter/executor split (two-agent flow).
 
 ## Tips
