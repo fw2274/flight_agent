@@ -1,0 +1,31 @@
+# Flight Agent Python Dependencies for ARM (Raspberry Pi)
+# Python 3.10+ required
+
+# Google AI Development Kit
+google-adk>=0.1.0
+google-genai>=1.0.0
+
+# LangGraph and LangChain dependencies
+langgraph>=0.1.0
+langchain>=0.1.0
+langchain-core>=0.1.0
+
+# Amadeus Flight API
+amadeus>=8.0.0
+
+# Environment and configuration
+python-dotenv>=1.0.0
+
+# Async support
+asyncio-compat>=0.2.0
+
+# Type hints and validation (optional but recommended)
+pydantic>=2.0.0
+
+# Audio processing dependencies (for voice input)
+# Note: Some audio libraries may need system packages on ARM
+# Install with: sudo apt-get install portaudio19-dev python3-pyaudio
+pyaudio>=0.2.13
+
+# Standard library enhancements
+typing-extensions>=4.5.0

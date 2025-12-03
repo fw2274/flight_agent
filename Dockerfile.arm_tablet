@@ -1,0 +1,48 @@
+# Dockerfile for ARM Tablet Simulation
+# This creates a minimal ARM64 environment to test the flight agent
+
+FROM arm64v8/ubuntu:22.04
+
+# Avoid prompts during package installation
+ENV DEBIAN_FRONTEND=noninteractive
+ENV LANG=C.UTF-8
+ENV LC_ALL=C.UTF-8
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    python3 \
+    python3-pip \
+    python3-venv \
+    curl \
+    wget \
+    git \
+    build-essential \
+    pkg-config \
+    libssl-dev \
+    libasound2-dev \
+    portaudio19-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Rust for ARM64
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+ENV PATH="/root/.cargo/bin:${PATH}"
+
+# Create working directory
+WORKDIR /app
+
+# Copy flight agent files
+COPY requirements_termux.txt /app/requirements.txt
+COPY flight_search_tablet.py /app/
+COPY .env /app/.env
+
+# Create Python virtual environment and install dependencies
+RUN python3 -m venv /app/.venv && \
+    . /app/.venv/bin/activate && \
+    pip install --upgrade pip && \
+    pip install -r requirements.txt
+
+# Set up entrypoint
+ENV PATH="/app/.venv/bin:${PATH}"
+WORKDIR /app
+
+CMD ["/bin/bash"]

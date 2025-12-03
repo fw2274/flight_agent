@@ -1,0 +1,58 @@
+# Simplified Dockerfile for ARM Tablet - Quick Testing
+FROM arm64v8/python:3.10-slim
+
+# Set environment
+ENV DEBIAN_FRONTEND=noninteractive
+ENV LANG=C.UTF-8
+WORKDIR /app
+
+# Install minimal dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    wget \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy application files
+COPY flight_search_tablet.py /app/
+COPY requirements_termux.txt /app/requirements.txt
+COPY .env /app/.env
+
+# Install Python dependencies
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir \
+    google-generativeai \
+    requests \
+    python-dotenv \
+    pydantic
+
+# Create a test script to demonstrate ARM architecture
+RUN echo '#!/bin/bash' > /app/test_arm.sh && \
+    echo 'echo "========================================="' >> /app/test_arm.sh && \
+    echo 'echo "ARM Tablet Architecture Verification"' >> /app/test_arm.sh && \
+    echo 'echo "========================================="' >> /app/test_arm.sh && \
+    echo 'echo ""' >> /app/test_arm.sh && \
+    echo 'echo "System Architecture:"' >> /app/test_arm.sh && \
+    echo 'uname -m' >> /app/test_arm.sh && \
+    echo 'echo ""' >> /app/test_arm.sh && \
+    echo 'echo "CPU Info:"' >> /app/test_arm.sh && \
+    echo 'cat /proc/cpuinfo | head -20' >> /app/test_arm.sh && \
+    echo 'echo ""' >> /app/test_arm.sh && \
+    echo 'echo "Python Version:"' >> /app/test_arm.sh && \
+    echo 'python3 --version' >> /app/test_arm.sh && \
+    echo 'echo ""' >> /app/test_arm.sh && \
+    echo 'echo "Python Architecture:"' >> /app/test_arm.sh && \
+    echo 'python3 -c "import platform; print(platform.machine())"' >> /app/test_arm.sh && \
+    echo 'echo ""' >> /app/test_arm.sh && \
+    echo 'echo "Installed Python Packages:"' >> /app/test_arm.sh && \
+    echo 'pip list' >> /app/test_arm.sh && \
+    echo 'echo ""' >> /app/test_arm.sh && \
+    echo 'echo "Flight Agent Files:"' >> /app/test_arm.sh && \
+    echo 'ls -lh /app/' >> /app/test_arm.sh && \
+    echo 'echo ""' >> /app/test_arm.sh && \
+    echo 'echo "========================================="' >> /app/test_arm.sh && \
+    echo 'echo "ARM Tablet Environment Ready!"' >> /app/test_arm.sh && \
+    echo 'echo "========================================="' >> /app/test_arm.sh && \
+    chmod +x /app/test_arm.sh
+
+CMD ["/bin/bash"]
