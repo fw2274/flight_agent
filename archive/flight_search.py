@@ -56,7 +56,17 @@ async def search_flights(
     )
 
     print(f"✓ Received {len(results) if results else 0} flight results")
+
+    # Check for errors in results
     if results:
+        for idx, result in enumerate(results):
+            result_dict = result.model_dump() if hasattr(result, "model_dump") else result
+            # Check if this is an error result
+            if isinstance(result_dict, dict) and result_dict.get('airline') in ['API Error', 'System Error', 'Location Error']:
+                print(f"\n⚠️  ERROR IN RESULT {idx + 1}:")
+                print(f"   Type: {result_dict.get('airline')}")
+                print(f"   Details: {result_dict.get('arrival_time')}")
+
         return [r.model_dump() if hasattr(r, "model_dump") else r for r in results]
     return []
 
@@ -256,7 +266,7 @@ async def main(args):
         print("❌ Amadeus client not initialized properly!")
         return
 
-    query = args.query or "Find a round-trip flight from ATL to JFK on Dec 02 returning Dec 15 for 2 adults in economy"
+    query = args.query or "Find a round-trip flight from ATL to JFK on 2025-12-01 returning 2025-12-15 for 2 adults in economy"
 
     print("\n" + "=" * 60)
     print("🧭 Interpreter Agent")
