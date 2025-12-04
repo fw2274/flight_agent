@@ -115,7 +115,7 @@ typing-extensions>=4.5.0
 
 ## 3. Application Architecture Changes
 
-### File: `flight_search_vtt.py` → `flight_search_tablet.py`
+### File: `flight_search_vtt.py` → ``
 
 #### **Original Architecture (Multi-Agent):**
 ```python
@@ -191,6 +191,62 @@ class SimplifiedFlightSearch:
         )
         return response.json()["data"]
 ```
+
+## 6. Integrated Voice-to-Flight Application
+
+### File: `voice_to_flight_integrated.py` (NEW)
+
+This file combines voice input + flight search into a single application.
+
+```python
+class VoiceToFlightSearch:
+    """Complete voice-to-flight pipeline for ARM tablets"""
+
+    def __init__(self, google_key, amadeus_key, amadeus_secret,
+                 voice_binary="./voice-to-text-mcp",
+                 whisper_model="models/ggml-base.en.bin"):
+        # Initialize APIs
+        self.google_key = google_key
+        self.amadeus_key = amadeus_key
+        self.voice_binary = voice_binary
+        self.whisper_model = whisper_model
+
+    def capture_voice(self, timeout_ms=30000) -> str:
+        """Call Rust binary to capture and transcribe voice"""
+        cmd = [
+            self.voice_binary,
+            "--timeout-ms", str(timeout_ms),
+            "--silence-timeout-ms", "2000",
+            self.whisper_model
+        ]
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        return result.stdout.strip()  # Return transcription
+
+    def run(self):
+        """Main pipeline"""
+        # Step 1: Voice input
+        transcription = self.capture_voice()
+        print(f"🎤 Heard: {transcription}")
+
+        # Step 2: Parse intent
+        params = self.parse_query(transcription)
+        print(f"📋 Extracted: {params}")
+
+        # Step 3: Search flights
+        flights = self.search_flights(params)
+
+        # Step 4: Display results
+        self.display_results(flights)
+```
+
+#### **Integration Points:**
+1. **Rust binary** called via `subprocess` for voice capture
+2. **Python** handles API calls (Gemini, Amadeus)
+3. **Graceful fallback** if voice binary unavailable
+4. **Text mode** for testing without audio hardware
+
+---
+
 
 #### **What Changed:**
 1. ✅ **Single file** instead of multi-file agent system
@@ -332,62 +388,8 @@ docker buildx build \
 
 ---
 
-## 6. Integrated Voice-to-Flight Application
 
-### File: `voice_to_flight_integrated.py` (NEW)
-
-This file combines voice input + flight search into a single application.
-
-```python
-class VoiceToFlightSearch:
-    """Complete voice-to-flight pipeline for ARM tablets"""
-
-    def __init__(self, google_key, amadeus_key, amadeus_secret,
-                 voice_binary="./voice-to-text-mcp",
-                 whisper_model="models/ggml-base.en.bin"):
-        # Initialize APIs
-        self.google_key = google_key
-        self.amadeus_key = amadeus_key
-        self.voice_binary = voice_binary
-        self.whisper_model = whisper_model
-
-    def capture_voice(self, timeout_ms=30000) -> str:
-        """Call Rust binary to capture and transcribe voice"""
-        cmd = [
-            self.voice_binary,
-            "--timeout-ms", str(timeout_ms),
-            "--silence-timeout-ms", "2000",
-            self.whisper_model
-        ]
-        result = subprocess.run(cmd, capture_output=True, text=True)
-        return result.stdout.strip()  # Return transcription
-
-    def run(self):
-        """Main pipeline"""
-        # Step 1: Voice input
-        transcription = self.capture_voice()
-        print(f"🎤 Heard: {transcription}")
-
-        # Step 2: Parse intent
-        params = self.parse_query(transcription)
-        print(f"📋 Extracted: {params}")
-
-        # Step 3: Search flights
-        flights = self.search_flights(params)
-
-        # Step 4: Display results
-        self.display_results(flights)
-```
-
-#### **Integration Points:**
-1. **Rust binary** called via `subprocess` for voice capture
-2. **Python** handles API calls (Gemini, Amadeus)
-3. **Graceful fallback** if voice binary unavailable
-4. **Text mode** for testing without audio hardware
-
----
-
-## 7. Complete File Structure Comparison
+## 5. Complete File Structure Comparison
 
 #### **Before (Original):**
 ```
@@ -420,7 +422,7 @@ flight_agent/
 
 ---
 
-## 8. Platform-Specific Optimizations
+## 6. Platform-Specific Optimizations
 
 ### ARM NEON SIMD Acceleration
 
@@ -449,7 +451,7 @@ whisper-rs = { version = "0.14.3" }  # Includes ARM NEON support
 
 ---
 
-## 9. Build Process Comparison
+## 7. Build Process Comparison
 
 ### Original Build (x86_64):
 ```bash
@@ -500,7 +502,7 @@ python voice_to_flight_integrated.py
 
 ---
 
-## 10. Testing Changes
+## 8. Testing Changes
 
 ### Original Testing (x86_64):
 ```bash
@@ -534,7 +536,7 @@ python voice_to_flight_integrated.py
 
 ---
 
-## 11. Performance Impact
+## 9. Performance Impact
 
 ### Benchmark Results
 
@@ -555,7 +557,7 @@ python voice_to_flight_integrated.py
 
 ---
 
-## 12. Summary of All Changes
+## 10. Summary of All Changes
 
 ### Code Changes (5 files modified/created):
 
@@ -647,3 +649,4 @@ The ARM64 conversion involved:
 **All changes documented:** December 3, 2025
 **Target architectures:** ARM64 (aarch64), x86_64 (backward compatible)
 **Status:** ✅ Production-ready for ARM tablets
+
