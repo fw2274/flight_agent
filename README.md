@@ -69,26 +69,19 @@ The Whisper model runs locally for privacy and offline capability, while Gemini 
          │
          ▼
 ┌─────────────────────────┐
-│ Voice-to-Text MCP Server│  ← Rust-based, uses Whisper AI
-│ (Rust + Whisper)        │
-└────────┬────────────────┘
-         │
-         ▼ (JSON-RPC)
-┌─────────────────────────┐
-│ voice_mcp_client.py     │  ← Python MCP client
-│ (Python MCP Client)     │
+│ Voice-to-Text MCP Server|
+| used as external binary | ← Rust-based, uses Whisper AI       │
 └────────┬────────────────┘
          │
          ▼
-┌─────────────────────────┐
-│ flight_search_vtt.py    │  ← Enhanced flight search
-│ (Interpreter + Executor)│
-└────────┬────────────────┘
+┌──────────────────────────────
+│ voice_to_flight_integrated.py|    ← Enhanced flight search
+│ (Interpreter + Executor)     │
+└────────┬─────────────────────
          │
          ▼
 ┌─────────────────────────┐
-│ LangGraph Flight Search │  ← Existing Amadeus integration
-│ (agent_graph.py)        │
+│ Amedus API search       │
 └─────────────────────────┘
 ```
 
@@ -634,5 +627,6 @@ print(f"✓ Heard: {query}")
 ---
 
 **Happy flying!** ✈️🎤
+
 
 
