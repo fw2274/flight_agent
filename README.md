@@ -155,44 +155,7 @@ python3 flight_search_vtt.py --voice
 ---
 
 ## System Architecture
-
-### Three-Agent Architecture
-
-**Agent 1: Voice Recognition Agent**
-- Captures spoken input from users and converts it into text
-- Technology: Whisper AI via MCP server (Rust-based)
-- Hardware acceleration: Metal/CoreML (macOS), CUDA (Linux/Windows)
-
-**Agent 2: Information Extraction Agent**
-- Processes transcribed text and extracts structured parameters
-- Model: Gemini 2.5 Flash Lite
-- Extracts:
-  - Origin and destination cities/airports (IATA codes)
-  - Departure and return dates (ISO format)
-  - Number of passengers (adults, children, infants)
-  - Cabin class preferences
-  - Special requirements or preferences
-
-**Agent 3: Flight Search Agent**
-- Executes flight search based on structured information
-- Framework: LangGraph
-- API: Amadeus (real flight data)
-- Output: Flight options with prices, times, airlines, duration
-
-### Component Details
-
-The Amadeus tooling comes from `langgraph_travel_agent` (vendored under `langgraph_travel_agent/backend`). We wrap its `agent_graph.py` primitives so Google ADK can call them directly:
-- `agent_graph_module.search_flights` → exposed to ADK via async `search_flights` wrapper
-- `agent_graph_module.amadeus` client → validated on startup
-
-**Files you'll care about:**
-- [flight_search.py](flight_search.py) — main entry; wires Gemini to LangGraph tool (text input only)
-- [flight_search_vtt.py](flight_search_vtt.py) — flight search with voice-to-text integration
-- [voice_mcp_client.py](voice_mcp_client.py) — Python client for voice-to-text MCP server
-- [langgraph_travel_agent/backend/agent_graph.py](langgraph_travel_agent/backend/agent_graph.py) — search_flights LangChain tool and Amadeus plumbing
-- `voice-to-text-mcp/` — Rust-based MCP server for speech recognition
-
----
+converted by claude-code from multi-agent application to single file application that deals with MCP server as external binary that takes the path to local whisper model as input along with audio. 
 
 ## Voice Integration Setup
 
@@ -381,24 +344,6 @@ for 2 adults in economy'
 
 ## Technical Details
 
-### MCP (Model Context Protocol) Architecture
-
-**What is MCP?**
-- Language-agnostic communication protocol
-- JSON-RPC 2.0 based
-- Enables tools to work across different languages
-
-**Communication:**
-- Transport: stdio (stdin/stdout)
-- Protocol: JSON-RPC 2.0
-- Tools exposed: `listen`, `transcribe_file`
-
-**Benefits:**
-- Language-agnostic (Rust server, Python client)
-- Standardized protocol
-- Isolated concerns (audio processing separate from business logic)
-- Reusable components
-
 ### Voice Processing
 
 **Whisper AI Integration:**
@@ -411,62 +356,6 @@ for 2 adults in economy'
 - Linux/Windows: CUDA (NVIDIA GPUs)
 - Fallback: CPU-only
 
-**Recording format:**
-- Sample rate: 16kHz
-- Channels: Mono
-- Format: WAV (PCM)
-
-**Auto-stop logic:**
-- Records up to `timeout_ms` milliseconds
-- Stops early if `silence_timeout_ms` of silence detected
-- Silence threshold: -30dB
-
-### Google ADK Integration
-
-**Agent configuration:**
-```python
-# Interpreter Agent
-model = "gemini-2.5-flash-lite"
-temperature = 0.3  # Low for consistent parsing
-
-# Executor Agent
-model = "gemini-2.5-flash-lite"
-tools = [search_flights]
-```
-
-### LangGraph Integration
-
-**Key file:** [langgraph_travel_agent/backend/agent_graph.py](langgraph_travel_agent/backend/agent_graph.py)
-
-**Enhanced error handling:**
-```python
-except ResponseError as error:
-    error_code = getattr(error, 'code', 'UNKNOWN')
-    error_description = getattr(error, 'description', str(error))
-
-    # Extract from response body
-    if hasattr(error, 'response') and error.response:
-        error_body = error.response.body
-        if isinstance(error_body, dict):
-            errors = error_body.get('errors', [])
-            if errors:
-                first_error = errors[0]
-                error_code = first_error.get('code', error_code)
-                error_description = first_error.get('detail', error_description)
-```
-
----
-
-## Troubleshooting
-
-### Setup Issues
-
-**"cargo: command not found"**
-```bash
-# Install Rust
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-source $HOME/.cargo/env
-```
 
 **"MCP server binary not found"**
 ```bash
@@ -554,35 +443,6 @@ python3 flight_search_vtt.py --query "Your query" --debug --verbose
 
 ---
 
-## Integration Examples
-
-### Using the MCP Client in Other Projects
-
-The [voice_mcp_client.py](voice_mcp_client.py) can be used in any Python project:
-
-```python
-from voice_mcp_client import VoiceToTextMCPClient
-
-# Initialize client
-client = VoiceToTextMCPClient(
-    mcp_server_path="voice-to-text-mcp/target/release/voice-to-text-mcp",
-    model_path="voice-to-text-mcp/models/ggml-base.en.bin"
-)
-
-# Listen for voice input
-user_input = client.listen(
-    timeout_ms=30000,         # 30 seconds max
-    silence_timeout_ms=2000,  # Stop after 2s silence
-    auto_stop=True            # Enable auto-stop
-)
-
-print(f"User said: {user_input}")
-
-# Transcribe existing audio file
-transcript = client.transcribe_file("audio.wav")
-print(f"Transcription: {transcript}")
-```
-
 ### Custom Flight Search Workflow
 
 ```python
@@ -627,6 +487,7 @@ print(f"✓ Heard: {query}")
 ---
 
 **Happy flying!** ✈️🎤
+
 
 
 
