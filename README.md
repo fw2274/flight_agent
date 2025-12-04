@@ -85,14 +85,6 @@ The Whisper model runs locally for privacy and offline capability, while Gemini 
 └─────────────────────────┘
 ```
 
-### Key Capabilities
-- 🎤 **Voice Input**: Speak your flight requirements naturally
-- 💬 **Text Input**: Traditional text query support
-- 🤖 **Dual-Agent System**: Interpreter agent + Executor agent
-- ✈️ **Real Flight Data**: Amadeus API integration
-- 🧠 **Smart Parsing**: Gemini AI for natural language understanding
-- 🎯 **Accurate Results**: Structured flight search with IATA codes and ISO dates
-
 ---
 
 ## Quick Start
@@ -487,6 +479,7 @@ print(f"✓ Heard: {query}")
 ---
 
 **Happy flying!** ✈️🎤
+
 
 
 
