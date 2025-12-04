@@ -58,51 +58,7 @@ The code is designed for ARM architecture (like tablets) and uses external depen
 
 The Whisper model runs locally for privacy and offline capability, while Gemini and Amadeus require internet connectivity for AI parsing and live flight data.
 
-flowchart TD
-    Start([User Starts Application]) --> Mode{Mode Selection}
-    
-    Mode -->|Voice Mode| Voice[🎤 Voice Capture]
-    Mode -->|Text Mode| Text[📝 Text Input]
-    
-    Voice --> Binary[Rust Binary: voice-to-text-mcp]
-    Binary --> Whisper[Whisper Model Processing]
-    Whisper --> Audio[Audio → Text Transcription]
-    Audio --> Transcript[Transcribed Query]
-    
-    Text --> Transcript
-    
-    Transcript --> Parse[🔍 Query Parsing]
-    Parse --> GeminiCheck{Gemini Available?}
-    
-    GeminiCheck -->|Yes| Gemini[Google Gemini AI]
-    GeminiCheck -->|No| Simple[Simple Pattern Matcher]
-    
-    Gemini --> Structured[Structured Parameters]
-    Simple --> Structured
-    
-    Structured --> Display1[📋 Display Parameters]
-    Display1 --> Auth[🔐 Amadeus OAuth2]
-    Auth --> Token[Access Token]
-    
-    Token --> API[Amadeus Flight Offers API]
-    API --> Search[🔎 Flight Search]
-    Search --> Results{Results Found?}
-    
-    Results -->|Yes| Format[Format Flight Data]
-    Results -->|No| NoFlights[❌ No Flights Message]
-    
-    Format --> Display2[✈️ Display Results]
-    Display2 --> End([Complete])
-    NoFlights --> End
-    
-    style Start fill:#e1f5e1
-    style End fill:#e1f5e1
-    style Voice fill:#fff4e1
-    style Whisper fill:#fff4e1
-    style Gemini fill:#e1f0ff
-    style API fill:#ffe1f0
-    style Display2 fill:#f0e1ff
-    
+
 ### System Flow
 
 ```
@@ -678,4 +634,5 @@ print(f"✓ Heard: {query}")
 ---
 
 **Happy flying!** ✈️🎤
+
 
