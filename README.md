@@ -16,8 +16,93 @@ A comprehensive flight search agent with voice input capabilities using Google A
 
 ## Overview
 
-This project implements a multi-agent system that enables users to search for flights using either voice commands or text input. The application is designed to improve accessibility for users who have difficulties with writing or interacting with keypads, including individuals with motor impairments, visual disabilities, or those who prefer voice interaction.
+This project investigates the changes needed to port a multi-agent application to mobile application running on ARM architectures. We also investigate the ability of claude code to convert a multi-agent application implemented using Google ADK and mcp server connections to run on arm architectures. The multi-agent project was initially developed as capstoneproject for this competition https://www.kaggle.com/competitions/agents-intensive-capstone-project. We modified the submitted code on this repo https://github.com/fw2274/flight_agent/tree/main using claude code to work on arm architectures. 
 
+# Voice-to-Flight Search System Explanation
+
+This Python application creates an integrated voice-controlled flight search system designed for ARM tablets. It combines multiple technologies to let users speak their flight queries naturally and get real-time results.
+
+## Core Workflow
+
+The system follows a four-stage pipeline:
+
+1. **Voice Input** → User speaks their flight request
+2. **Whisper Transcription** → Converts speech to text using a local Whisper model
+3. **Gemini Parsing** → AI extracts structured flight parameters from natural language
+4. **Amadeus Search** → Queries the Amadeus API for actual flight offers
+
+## Key Components
+
+### VoiceToFlightSearch Class
+
+The main application class that orchestrates the entire process.
+
+**`capture_voice()`** - Records audio and transcribes it by calling an external Rust binary (`voice-to-text-mcp`) that handles the actual Whisper processing. It manages timeouts and silence detection, returning the transcribed text.
+
+**`parse_query()`** - Takes the transcribed text and uses Google's Gemini AI to extract structured information like airport codes, dates, passenger count, and travel class. If Gemini fails, it falls back to a simple pattern-matching parser that looks for airport codes and date keywords.
+
+**`search_flights()`** - Authenticates with Amadeus using OAuth2 credentials, then queries their flight search API with the parsed parameters. It handles API responses and formats the data for display.
+
+**`display_results()`** - Presents flight options with price, carrier, departure/arrival times, and duration in a formatted console output.
+
+## Usage Modes
+
+The application supports two modes:
+
+- **Voice mode** (default): Captures live audio input for hands-free operation
+- **Text mode** (`--text` flag): Accepts typed queries for testing without voice hardware
+
+## Technical Architecture
+
+The code is designed for ARM architecture (like tablets) and uses external dependencies carefully, checking for their availability before use. It loads credentials from environment variables (.env file) and provides graceful degradation when optional components aren't available.
+
+The Whisper model runs locally for privacy and offline capability, while Gemini and Amadeus require internet connectivity for AI parsing and live flight data.
+
+flowchart TD
+    Start([User Starts Application]) --> Mode{Mode Selection}
+    
+    Mode -->|Voice Mode| Voice[🎤 Voice Capture]
+    Mode -->|Text Mode| Text[📝 Text Input]
+    
+    Voice --> Binary[Rust Binary: voice-to-text-mcp]
+    Binary --> Whisper[Whisper Model Processing]
+    Whisper --> Audio[Audio → Text Transcription]
+    Audio --> Transcript[Transcribed Query]
+    
+    Text --> Transcript
+    
+    Transcript --> Parse[🔍 Query Parsing]
+    Parse --> GeminiCheck{Gemini Available?}
+    
+    GeminiCheck -->|Yes| Gemini[Google Gemini AI]
+    GeminiCheck -->|No| Simple[Simple Pattern Matcher]
+    
+    Gemini --> Structured[Structured Parameters]
+    Simple --> Structured
+    
+    Structured --> Display1[📋 Display Parameters]
+    Display1 --> Auth[🔐 Amadeus OAuth2]
+    Auth --> Token[Access Token]
+    
+    Token --> API[Amadeus Flight Offers API]
+    API --> Search[🔎 Flight Search]
+    Search --> Results{Results Found?}
+    
+    Results -->|Yes| Format[Format Flight Data]
+    Results -->|No| NoFlights[❌ No Flights Message]
+    
+    Format --> Display2[✈️ Display Results]
+    Display2 --> End([Complete])
+    NoFlights --> End
+    
+    style Start fill:#e1f5e1
+    style End fill:#e1f5e1
+    style Voice fill:#fff4e1
+    style Whisper fill:#fff4e1
+    style Gemini fill:#e1f0ff
+    style API fill:#ffe1f0
+    style Display2 fill:#f0e1ff
+    
 ### System Flow
 
 ```
@@ -593,3 +678,4 @@ print(f"✓ Heard: {query}")
 ---
 
 **Happy flying!** ✈️🎤
+
