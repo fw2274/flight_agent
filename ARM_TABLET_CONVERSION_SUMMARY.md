@@ -30,7 +30,7 @@ Successfully converted the flight_agent repository to run on ARM-based tablets u
 - Created `requirements_termux.txt` for Android/Termux deployment with lighter dependencies
 
 #### **Simplified Tablet Application**
-- Created `flight_search_tablet.py` - a simplified version that:
+- Created `voice_to_flight_integrated.py` - a simplified version that:
   - Works with reduced dependencies
   - Uses direct Google Generative AI API (instead of heavy Google ADK)
   - Implements simplified Amadeus flight search
@@ -40,7 +40,7 @@ Successfully converted the flight_agent repository to run on ARM-based tablets u
 ### 3. **ARM64 Docker Simulation**
 
 #### **Docker Configuration**
-- Created `Dockerfile.arm_tablet` for ARM64 Ubuntu 22.04:
+- Created `Dockerfile.voice_flight_arm64` for ARM64 Ubuntu 22.04:
   - Installs Python 3, Rust, build tools
   - Audio libraries (ALSA, PortAudio)
   - Python dependencies
@@ -218,3 +218,4 @@ The system is successfully emulating ARM64 architecture and installing all neces
 **Conversion completed**: 2025-12-02
 **Target Architecture**: ARM64 (aarch64)
 **Primary Use Case**: ARM-based Android tablets, Linux ARM devices, Raspberry Pi
+
